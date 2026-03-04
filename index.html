@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naina's Habit Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Clash+Display:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080808;
+  --surface: #0f0f0f;
+  --surface2: #161616;
+  --surface3: #1e1e1e;
+  --border: #1c1c1c;
+  --border2: #262626;
+  --text: #f0f0f0;
+  --muted: #444;
+  --muted2: #666;
+
+  --yellow: #f5c518;
+  --yellow-dim: rgba(245,197,24,0.12);
+  --pink: #ff6eb4;
+  --pink-dim: rgba(255,110,180,0.12);
+  --purple: #b06cff;
+  --purple-dim: rgba(176,108,255,0.12);
+  --green: #2ecc71;
+  --green-dim: rgba(46,204,113,0.12);
+  --red: #ff4757;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  padding: 24px 32px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 50;
+}
+
+.header-left { display: flex; align-items: baseline; gap: 16px; }
+.header-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.header-title span { color: var(--yellow); }
+.header-month {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.stat-pill-val {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: 'DM Mono', monospace;
+}
+.stat-pill-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted2);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: flex;
+  height: calc(100vh - 73px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 16px 0;
+}
+
+.sidebar-section {
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.sidebar-label {
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* HABIT LIST IN SIDEBAR */
+.habit-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.habit-color-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.habit-name-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  outline: none;
+  cursor: text;
+  min-width: 0;
+}
+.habit-name-input::placeholder { color: var(--muted); }
+.habit-name-input:focus {
+  background: var(--surface2);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.habit-streak {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--yellow);
+  flex-shrink: 0;
+}
+
+/* PROGRESS BARS IN SIDEBAR */
+.progress-item {
+  margin-bottom: 10px;
+}
+.progress-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.progress-label {
+  font-size: 11px;
+  color: var(--muted2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+.progress-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--text);
+}
+.progress-bar-bg {
+  height: 4px;
+  background: var(--surface3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+/* ── GRID WRAPPER ── */
+.grid-wrapper {
+  min-width: max-content;
+  padding: 0;
+}
+
+/* ── DATE HEADER ROW ── */
+.date-header-row {
+  display: flex;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+}
+
+.date-header-spacer {
+  width: 0;
+  flex-shrink: 0;
+}
+
+.date-cell-header {
+  width: 52px;
+  min-width: 52px;
+  padding: 12px 4px 8px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.date-cell-header:hover { background: var(--surface2); }
+.date-cell-header.today { background: var(--yellow-dim); }
+.date-cell-header.today .date-num { color: var(--yellow); }
+.date-cell-header.selected { background: var(--purple-dim); }
+
+.date-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  display: block;
+  margin-bottom: 2px;
+}
+.date-day {
+  font-size: 9px;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'DM Mono', monospace;
+}
+.date-todo-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--pink);
+  margin: 3px auto 0;
+  opacity: 0;
+}
+.date-todo-dot.has-todo { opacity: 1; }
+
+/* ── HABIT ROWS ── */
+.habit-rows { }
+
+.habit-row {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+.habit-row:hover { background: rgba(255,255,255,0.01); }
+
+.habit-row-cells {
+  display: flex;
+}
+
+.habit-check-cell {
+  width: 52px;
+  min-width: 52px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+}
+.habit-check-cell:hover { background: var(--surface2); }
+.habit-check-cell.checked { background: var(--surface2); }
+
+.check-box {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--border2);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-size: 11px;
+}
+.habit-check-cell.checked .check-box {
+  border-color: transparent;
+}
+
+/* ── TODO PANEL ── */
+.todo-panel {
+  position: fixed;
+  right: 0; top: 73px;
+  width: 320px;
+  height: calc(100vh - 73px);
+  background: var(--surface);
+  border-left: 1px solid var(--border2);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+}
+.todo-panel.open { transform: translateX(0); }
+
+.todo-panel-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.todo-date-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+.todo-date-sub {
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: 'DM Mono', monospace;
+  margin-top: 2px;
+}
+.todo-close {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.todo-close:hover { color: var(--text); }
+
+.todo-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  group: true;
+}
+
+.todo-checkbox {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 10px;
+  transition: all 0.12s;
+}
+.todo-checkbox.checked {
+  background: var(--green);
+  border-color: var(--green);
+  color: #000;
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.4;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  outline: none;
+  cursor: text;
+}
+.todo-text.done { text-decoration: line-through; color: var(--muted2); }
+.todo-text::placeholder { color: var(--muted); }
+
+.todo-del {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.todo-item:hover .todo-del { opacity: 1; }
+.todo-del:hover { color: var(--red); }
+
+.todo-add-row {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+}
+.todo-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s;
+}
+.todo-input:focus { border-color: var(--pink); }
+.todo-input::placeholder { color: var(--muted); }
+.todo-add-btn {
+  background: var(--pink);
+  border: none;
+  color: #000;
+  padding: 9px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+.todo-add-btn:hover { background: #ff85c0; }
+
+/* ── WEEK SUMMARY ROW ── */
+.week-summary-row {
+  display: flex;
+  border-bottom: 2px solid var(--border2);
+  background: var(--surface);
+}
+
+.week-label-cell {
+  width: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.week-pct-cell {
+  width: 52px;
+  min-width: 52px;
+  padding: 6px 4px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted2);
+}
+
+/* ── STATS ROW AT BOTTOM ── */
+.stats-row {
+  display: flex;
+  border-top: 2px solid var(--border2);
+  background: var(--surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.stats-cell {
+  width: 52px;
+  min-width: 52px;
+  padding: 8px 4px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stats-cell-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+}
+.stats-cell-pct {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--muted2);
+}
+
+/* ── SAVE INDICATOR ── */
+.save-indicator {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  color: var(--green);
+  transition: transform 0.3s ease;
+  z-index: 100;
+}
+.save-indicator.show { transform: translateX(-50%) translateY(0); }
+
+/* ── LOADING ── */
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--muted2);
+}
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--yellow);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+/* ── MONTH NAV ── */
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.nav-btn:hover { color: var(--text); border-color: #444; }
+
+.save-btn {
+  background: var(--yellow);
+  border: none;
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+.save-btn:hover { background: #e8bb00; }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen" class="loading-screen">
+  <div class="spinner"></div> Loading your tracker...
+</div>
+
+<div id="app" style="display:none">
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">Naina's <span>Habit Tracker</span></div>
+    <div class="header-month" id="headerMonth"></div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="statOverall" style="color:var(--yellow)">0%</div>
+      <div class="stat-pill-label">This Month</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="statDone" style="color:var(--green)">0</div>
+      <div class="stat-pill-label">Top Habit</div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-val" id="statStreak" style="color:var(--pink)">0</div>
+      <div class="stat-pill-label">Best Streak</div>
+    </div>
+    <div class="month-nav">
+      <button class="nav-btn" onclick="prevMonth()">‹</button>
+      <button class="nav-btn" onclick="nextMonth()">›</button>
+    </div>
+    <button class="save-btn" onclick="saveAll()">Save</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Habits</div>
+      <div id="habitList"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Progress</div>
+      <div id="progressList"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN GRID -->
+  <div class="main" id="mainGrid">
+    <div class="grid-wrapper" id="gridWrapper"></div>
+  </div>
+
+</div>
+
+</div>
+
+<!-- TODO PANEL -->
+<div class="todo-panel" id="todoPanel">
+  <div class="todo-panel-header">
+    <div>
+      <div class="todo-date-label" id="todoPanelDate"></div>
+      <div class="todo-date-sub">To-Do List</div>
+    </div>
+    <button class="todo-close" onclick="closeTodo()">✕</button>
+  </div>
+  <div class="todo-list" id="todoList"></div>
+  <div class="todo-add-row">
+    <input class="todo-input" id="todoInput" placeholder="Add a to-do..." onkeydown="if(event.key==='Enter')addTodo()" />
+    <button class="todo-add-btn" onclick="addTodo()">+ Add</button>
+  </div>
+</div>
+
+<div class="save-indicator" id="saveIndicator">✓ Saved!</div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────
+const AW = {
+  url: 'https://cloud.appwrite.io/v1',
+  project: '69a7448a002fc5074132',
+  db: '69a74521003636c06877',
+  col: 'habit_tracker'
+};
+
+// ── HABIT COLORS ─────────────────────────────────────────
+const HABIT_COLORS = [
+  '#f5c518','#ff6eb4','#b06cff','#2ecc71',
+  '#ff8c42','#00d4d4','#ff4757','#a8e063',
+  '#ffd32a','#c56cf0'
+];
+
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ── STATE ────────────────────────────────────────────────
+let currentYear = 2026;
+let currentMonth = 2; // 0-indexed, 2 = March
+let habits = Array.from({length:10}, (_,i) => `Habit ${i+1}`);
+let completions = {}; // { "YYYY-MM-DD_habitIndex": true }
+let todos = {}; // { "YYYY-MM-DD": [{text, done}] }
+let selectedDate = null;
+let saveTimer = null;
+
+// ── APPWRITE ─────────────────────────────────────────────
+const DOC_ID = 'main_data';
+
+async function loadData() {
+  try {
+    const res = await fetch(`${AW.url}/databases/${AW.db}/collections/${AW.col}/documents/${DOC_ID}`, {
+      headers: { 'X-Appwrite-Project': AW.project }
+    });
+    if (res.ok) {
+      const doc = await res.json();
+      if (doc.habits) habits = JSON.parse(doc.habits);
+      if (doc.completions) completions = JSON.parse(doc.completions);
+      if (doc.todos) todos = JSON.parse(doc.todos);
+    }
+  } catch(e) { console.log('Load:', e); }
+  init();
+}
+
+async function saveAll() {
+  const body = {
+    data: {
+      habits: JSON.stringify(habits),
+      completions: JSON.stringify(completions),
+      todos: JSON.stringify(todos)
+    }
+  };
+  try {
+    let res = await fetch(`${AW.url}/databases/${AW.db}/collections/${AW.col}/documents/${DOC_ID}`, {
+      method: 'PATCH',
+      headers: { 'X-Appwrite-Project': AW.project, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.status === 404) {
+      await fetch(`${AW.url}/databases/${AW.db}/collections/${AW.col}/documents`, {
+        method: 'POST',
+        headers: { 'X-Appwrite-Project': AW.project, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documentId: DOC_ID, ...body })
+      });
+    }
+    showSaved();
+  } catch(e) { console.log('Save:', e); }
+}
+
+function autoSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveAll, 1500);
+}
+
+function showSaved() {
+  const el = document.getElementById('saveIndicator');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── INIT ─────────────────────────────────────────────────
+function init() {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  render();
+}
+
+function getDaysInMonth(year, month) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function dateKey(year, month, day) {
+  return `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+
+function checkKey(dateStr, habitIdx) {
+  return `${dateStr}_${habitIdx}`;
+}
+
+// ── RENDER ───────────────────────────────────────────────
+function render() {
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === currentYear && today.getMonth() === currentMonth;
+  const todayDate = today.getDate();
+
+  document.getElementById('headerMonth').textContent = `${MONTHS[currentMonth]} ${currentYear}`;
+
+  renderSidebar();
+  renderGrid(daysInMonth, isCurrentMonth, todayDate);
+  renderStats();
+}
+
+function renderSidebar() {
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+
+  // Habit list
+  const habitList = document.getElementById('habitList');
+  habitList.innerHTML = habits.map((h, i) => {
+    const streak = calcStreak(i);
+    return `<div class="habit-item">
+      <div class="habit-color-dot" style="background:${HABIT_COLORS[i]}"></div>
+      <input class="habit-name-input" value="${h}" placeholder="Habit ${i+1}"
+        onchange="habits[${i}]=this.value;autoSave();renderSidebar();renderGridHabitColors()"
+        oninput="habits[${i}]=this.value" />
+      ${streak > 0 ? `<span class="habit-streak">${streak}🔥</span>` : ''}
+    </div>`;
+  }).join('');
+
+  // Progress list — days done / total days in month * 100
+  const progressList = document.getElementById('progressList');
+  progressList.innerHTML = habits.map((h, i) => {
+    let done = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dk = dateKey(currentYear, currentMonth, d);
+      if (completions[checkKey(dk, i)]) done++;
+    }
+    const pct = Math.round((done / daysInMonth) * 100);
+    return `<div class="progress-item">
+      <div class="progress-label-row">
+        <span class="progress-label">${h}</span>
+        <span class="progress-pct">${pct}%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" style="width:${pct}%;background:${HABIT_COLORS[i]}"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGrid(daysInMonth, isCurrentMonth, todayDate) {
+  const wrapper = document.getElementById('gridWrapper');
+  daysInMonth = daysInMonth || getDaysInMonth(currentYear, currentMonth);
+  const today = new Date();
+  isCurrentMonth = isCurrentMonth !== undefined ? isCurrentMonth : (today.getFullYear() === currentYear && today.getMonth() === currentMonth);
+  todayDate = todayDate || today.getDate();
+
+  // Build date headers
+  let dateHeaders = '<div class="date-header-row"><div class="date-header-spacer"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dk = dateKey(currentYear, currentMonth, d);
+    const dayOfWeek = new Date(currentYear, currentMonth, d).getDay();
+    const isToday = isCurrentMonth && d === todayDate;
+    const isSel = selectedDate === dk;
+    const hasTodo = todos[dk] && todos[dk].length > 0;
+    dateHeaders += `<div class="date-cell-header ${isToday?'today':''} ${isSel?'selected':''}" onclick="openTodo('${dk}',${d})">
+      <span class="date-num">${d}</span>
+      <span class="date-day">${DAYS[dayOfWeek]}</span>
+      <div class="date-todo-dot ${hasTodo?'has-todo':''}"></div>
+    </div>`;
+  }
+  dateHeaders += '</div>';
+
+  // Build habit rows
+  let rows = '<div class="habit-rows">';
+  habits.forEach((h, hi) => {
+    const color = HABIT_COLORS[hi];
+    rows += `<div class="habit-row" id="hrow-${hi}"><div class="habit-row-cells">`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dk = dateKey(currentYear, currentMonth, d);
+      const ck = checkKey(dk, hi);
+      const checked = !!completions[ck];
+      const isToday = isCurrentMonth && d === todayDate;
+      rows += `<div class="habit-check-cell ${checked?'checked':''} ${isToday?'today-col':''}"
+        onclick="toggleCheck('${dk}',${hi},this)"
+        style="${checked ? `background:${color}20` : ''}">
+        <div class="check-box" style="${checked ? `background:${color};border-color:${color}` : ''}">
+          ${checked ? '✓' : ''}
+        </div>
+      </div>`;
+    }
+    rows += '</div></div>';
+  });
+  rows += '</div>';
+
+  // Daily completion row (bottom stats)
+  let statsRow = '<div class="stats-row"><div style="width:0;flex-shrink:0"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dk = dateKey(currentYear, currentMonth, d);
+    let done = 0;
+    habits.forEach((_, hi) => { if (completions[checkKey(dk, hi)]) done++; });
+    const pct = Math.round((done / habits.length) * 100);
+    const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : pct > 0 ? 'var(--pink)' : 'var(--muted)';
+    statsRow += `<div class="stats-cell">
+      <div class="stats-cell-count" style="color:${color}">${done}</div>
+      <div class="stats-cell-pct">${pct}%</div>
+    </div>`;
+  }
+  statsRow += '</div>';
+
+  wrapper.innerHTML = dateHeaders + rows + statsRow;
+}
+
+function renderGridHabitColors() {
+  // Just re-render the full grid
+  renderGrid();
+}
+
+// ── STREAK: consecutive days from today going back, per habit ──
+function calcStreak(habitIdx) {
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const dk = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    if (completions[checkKey(dk, habitIdx)]) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else break;
+  }
+  return streak;
+}
+
+// ── BEST STREAK: longest consecutive days for a habit in current month ──
+function calcBestStreakForHabit(habitIdx) {
+  const dim = getDaysInMonth(currentYear, currentMonth);
+  let best = 0, current = 0;
+  for (let d = 1; d <= dim; d++) {
+    const dk = dateKey(currentYear, currentMonth, d);
+    if (completions[checkKey(dk, habitIdx)]) {
+      current++;
+      if (current > best) best = current;
+    } else {
+      current = 0;
+    }
+  }
+  return best;
+}
+
+// ── HABIT PROGRESS: done / total days in month * 100 ──
+function calcHabitProgress(habitIdx) {
+  const dim = getDaysInMonth(currentYear, currentMonth);
+  let done = 0;
+  for (let d = 1; d <= dim; d++) {
+    if (completions[checkKey(dateKey(currentYear, currentMonth, d), habitIdx)]) done++;
+  }
+  return Math.round((done / dim) * 100);
+}
+
+function renderStats() {
+  // This month % = average of all habits progress
+  let total = 0;
+  habits.forEach((_, hi) => { total += calcHabitProgress(hi); });
+  const avgPct = Math.round(total / habits.length);
+  document.getElementById('statOverall').textContent = avgPct + '%';
+
+  // Top habit = habit with highest progress %
+  let topIdx = 0, topPct = 0;
+  habits.forEach((_, hi) => {
+    const p = calcHabitProgress(hi);
+    if (p > topPct) { topPct = p; topIdx = hi; }
+  });
+  document.getElementById('statDone').textContent = habits[topIdx].length > 8 ? habits[topIdx].substring(0,8)+'…' : habits[topIdx];
+
+  // Best streak = highest best streak across all habits this month
+  let bestStreak = 0;
+  habits.forEach((_, hi) => {
+    const s = calcBestStreakForHabit(hi);
+    if (s > bestStreak) bestStreak = s;
+  });
+  document.getElementById('statStreak').textContent = bestStreak;
+}
+
+// ── TOGGLE CHECK ─────────────────────────────────────────
+function toggleCheck(dateStr, habitIdx, cell) {
+  const ck = checkKey(dateStr, habitIdx);
+  const color = HABIT_COLORS[habitIdx];
+  if (completions[ck]) {
+    delete completions[ck];
+    cell.classList.remove('checked');
+    cell.style.background = '';
+    cell.querySelector('.check-box').style.cssText = '';
+    cell.querySelector('.check-box').textContent = '';
+  } else {
+    completions[ck] = true;
+    cell.classList.add('checked');
+    cell.style.background = `${color}20`;
+    cell.querySelector('.check-box').style.cssText = `background:${color};border-color:${color}`;
+    cell.querySelector('.check-box').textContent = '✓';
+  }
+  renderSidebar();
+  renderStats();
+  // Update stats row
+  updateDayStats(dateStr);
+  autoSave();
+}
+
+function updateDayStats(dateStr) {
+  // Re-render just the stats row
+  renderGrid();
+}
+
+// ── TODO ─────────────────────────────────────────────────
+function openTodo(dateStr, dayNum) {
+  selectedDate = dateStr;
+  const d = new Date(currentYear, currentMonth, dayNum);
+  document.getElementById('todoPanelDate').textContent = `${DAYS[d.getDay()]}, ${MONTHS[currentMonth]} ${dayNum}`;
+  document.getElementById('todoPanel').classList.add('open');
+  renderTodoList();
+  // refresh date header selected state
+  document.querySelectorAll('.date-cell-header').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('.date-cell-header')[dayNum-1]?.classList.add('selected');
+}
+
+function closeTodo() {
+  document.getElementById('todoPanel').classList.remove('open');
+  selectedDate = null;
+  document.querySelectorAll('.date-cell-header').forEach(el => el.classList.remove('selected'));
+}
+
+function renderTodoList() {
+  if (!selectedDate) return;
+  const list = todos[selectedDate] || [];
+  const container = document.getElementById('todoList');
+  container.innerHTML = list.length === 0
+    ? `<div style="color:var(--muted);font-size:12px;font-family:'DM Mono',monospace;text-align:center;padding:20px">No to-dos yet for this date</div>`
+    : list.map((t, i) => `
+      <div class="todo-item">
+        <div class="todo-checkbox ${t.done?'checked':''}" onclick="toggleTodo(${i})">
+          ${t.done ? '✓' : ''}
+        </div>
+        <input class="todo-text ${t.done?'done':''}" value="${t.text}"
+          onchange="updateTodoText(${i}, this.value)"
+          placeholder="To-do..." />
+        <button class="todo-del" onclick="deleteTodo(${i})">✕</button>
+      </div>`).join('');
+}
+
+function addTodo() {
+  if (!selectedDate) return;
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!todos[selectedDate]) todos[selectedDate] = [];
+  todos[selectedDate].push({ text, done: false });
+  input.value = '';
+  renderTodoList();
+  // update dot
+  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+  renderGrid();
+  autoSave();
+}
+
+function toggleTodo(idx) {
+  if (!selectedDate || !todos[selectedDate]) return;
+  todos[selectedDate][idx].done = !todos[selectedDate][idx].done;
+  renderTodoList();
+  autoSave();
+}
+
+function updateTodoText(idx, text) {
+  if (!selectedDate || !todos[selectedDate]) return;
+  todos[selectedDate][idx].text = text;
+  autoSave();
+}
+
+function deleteTodo(idx) {
+  if (!selectedDate || !todos[selectedDate]) return;
+  todos[selectedDate].splice(idx, 1);
+  renderTodoList();
+  renderGrid();
+  autoSave();
+}
+
+// ── MONTH NAV ────────────────────────────────────────────
+function prevMonth() {
+  currentMonth--;
+  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+  closeTodo();
+  render();
+}
+
+function nextMonth() {
+  currentMonth++;
+  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+  closeTodo();
+  render();
+}
+
+// ── START ────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
