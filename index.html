@@ -628,7 +628,7 @@ body {
 
 <script>
 const AW = {
-  url: 'https://sgp.cloud.appwrite.io/v1',
+  url: 'https://cloud.appwrite.io/v1',
   project: '69a7448a002fc5074132',
   db: '69a74521003636c06877',
   col: 'habit_tracker'
@@ -683,14 +683,23 @@ async function saveAll() {
       body: JSON.stringify(body)
     });
     if (res.status === 404) {
-      await fetch(`${AW.url}/databases/${AW.db}/collections/${AW.col}/documents`, {
+      const createRes = await fetch(`${AW.url}/databases/${AW.db}/collections/${AW.col}/documents`, {
         method: 'POST',
         headers: { 'X-Appwrite-Project': AW.project, 'Content-Type': 'application/json' },
         body: JSON.stringify({ documentId: DOC_ID, ...body })
       });
+      if (!createRes.ok) {
+        const err = await createRes.json();
+        console.error('POST failed:', JSON.stringify(err));
+        return;
+      }
+    } else if (!res.ok) {
+      const err = await res.json();
+      console.error('PATCH failed:', JSON.stringify(err));
+      return;
     }
     showSaved();
-  } catch(e) { console.log('Save:', e); }
+  } catch(e) { console.error('Save error:', e); }
 }
 
 function autoSave() {
